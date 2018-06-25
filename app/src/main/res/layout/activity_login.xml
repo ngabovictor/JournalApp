@@ -1,10 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.LoginActivity"
-    android:id="@+id/main_layout">
+    android:id="@+id/main_layout"
+    android:background="@drawable/login_bg">
 
-</RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:layout_gravity="center"
+        android:padding="@dimen/dimen_16"
+        android:layout_margin="@dimen/dimen_16">
+        <LinearLayout
+            android:id="@+id/login_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@null">
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/email_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Email"
+                android:inputType="textEmailAddress"
+                android:hint="Email"/>
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/password_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="password"
+                android:inputType="textPassword"
+                android:hint="Password"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/login_btn"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="login"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/colorPrimary"/>
+                <Button
+                    android:id="@+id/go_register"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="register"
+                    android:background="@color/transparent"
+                    android:textColor="@color/colorPrimary"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/register_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@null"
+            android:visibility="gone">
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/r_email_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Email"
+                android:inputType="textEmailAddress"
+                android:hint="Email"/>
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/r_password_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="password"
+                android:inputType="textPassword"
+                android:hint="Password"/>
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/repeat_password_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="Confirm password"
+                android:inputType="textPassword"
+                android:hint="Confirm password"/>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/register_btn"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="register"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/colorPrimary"/>
+                <Button
+                    android:id="@+id/go_login"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="login"
+                    android:background="@color/transparent"
+                    android:textColor="@color/colorPrimary"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/or"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/login_view"
+            android:text="OR"
+            android:layout_centerHorizontal="true"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_margin="@dimen/dimen_10"/>
+
+        <Button
+            android:id="@+id/google_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/ic_google_logo"
+            android:drawableStart="@mipmap/ic_google_logo"
+            android:layout_below="@id/or"
+            android:text="SIGN IN WITH GOOGLE"/>
+    </RelativeLayout>
+</ScrollView>

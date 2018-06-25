@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <dimen name="dimen_16">16dp</dimen>
+    <dimen name="dimen_10">10dp</dimen>
+    <dimen name="dimen_5">5dp</dimen>
+    <dimen name="dimen_15">15dp</dimen>
+    <dimen name="action_bar_height">56dp</dimen>
+</resources>
