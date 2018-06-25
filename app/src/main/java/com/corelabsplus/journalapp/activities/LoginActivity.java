@@ -8,6 +8,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.corelabsplus.journalapp.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -22,9 +26,32 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.rengwuxian.materialedittext.MaterialEditText;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class LoginActivity extends AppCompatActivity implements
         View.OnClickListener {
+
+    //BINDING VIEWS
+
+    @BindView(R.id.login_view) LinearLayout loginView;
+    @BindView(R.id.register_view) LinearLayout registerView;
+    @BindView(R.id.or) TextView orText;
+    @BindView(R.id.email_input) MaterialEditText emailView;
+    @BindView(R.id.r_email_input) MaterialEditText registerEmailView;
+    @BindView(R.id.password_input) MaterialEditText passwordView;
+    @BindView(R.id.r_password_input) MaterialEditText registerPasswordView;
+    @BindView(R.id.repeat_password_input) MaterialEditText rePasswordView;
+    @BindView(R.id.name_input) MaterialEditText nameView;
+    @BindView(R.id.login_btn) Button loginBtn;
+    @BindView(R.id.register_btn) Button registerBtn;
+    @BindView(R.id.go_login) Button goLogin;
+    @BindView(R.id.go_register) Button goRegister;
+    @BindView(R.id.google_login) Button googleLoginBtn;
+
+    //GLOBAL VARIABLES AND CONSTANTS
 
     private static final int RC_SIGN_IN = 1;
     private static final String TAG = "LoginActivity";
@@ -36,6 +63,7 @@ public class LoginActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        ButterKnife.bind(this);
 
         context = this;
 
@@ -49,11 +77,20 @@ public class LoginActivity extends AppCompatActivity implements
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+
+        //BUTTON CLICKS
+
+        googleLoginBtn.setOnClickListener(this);
+        loginBtn.setOnClickListener(this);
+        registerBtn.setOnClickListener(this);
+        goLogin.setOnClickListener(this);
+        goRegister.setOnClickListener(this);
     }
 
     //SIGNIN INTENT
 
-    private void signIn() {
+    private void googleSignIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -145,5 +182,35 @@ public class LoginActivity extends AppCompatActivity implements
     @Override
     public void onClick(View v) {
         int id = v.getId();
+
+        if (id == R.id.google_login){
+            googleSignIn();
+        }
+
+        else if (id == R.id.login_btn){
+
+        }
+
+        else if (id == R.id.register_btn){
+
+        }
+
+        else if (id == R.id.go_login){
+
+            registerView.setVisibility(View.GONE);
+            loginView.setVisibility(View.VISIBLE);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) orText.getLayoutParams();
+            layoutParams.removeRule(RelativeLayout.BELOW);
+            layoutParams.addRule(RelativeLayout.BELOW, R.id.login_view);
+
+        }
+
+        else if (id == R.id.go_register){
+            registerView.setVisibility(View.VISIBLE);
+            loginView.setVisibility(View.GONE);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) orText.getLayoutParams();
+            layoutParams.removeRule(RelativeLayout.BELOW);
+            layoutParams.addRule(RelativeLayout.BELOW, R.id.register_view);
+        }
     }
 }

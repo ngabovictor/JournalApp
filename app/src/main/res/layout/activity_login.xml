@@ -72,6 +72,15 @@
             android:visibility="gone">
 
             <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/name_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:met_floatingLabel="highlight"
+                app:met_floatingLabelText="name"
+                android:inputType="textEmailAddress"
+                android:hint="Your name"/>
+
+            <com.rengwuxian.materialedittext.MaterialEditText
                 android:id="@+id/r_email_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
