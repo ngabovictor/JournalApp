@@ -28,7 +28,9 @@
                 app:met_floatingLabel="highlight"
                 app:met_floatingLabelText="Email"
                 android:inputType="textEmailAddress"
-                android:hint="Email"/>
+                android:hint="Email"
+                app:met_iconLeft="@drawable/ic_email"
+                app:met_iconPadding="@dimen/dimen_5"/>
 
             <com.rengwuxian.materialedittext.MaterialEditText
                 android:id="@+id/password_input"
@@ -37,7 +39,9 @@
                 app:met_floatingLabel="highlight"
                 app:met_floatingLabelText="password"
                 android:inputType="textPassword"
-                android:hint="Password"/>
+                android:hint="Password"
+                app:met_iconLeft="@drawable/ic_password"
+                app:met_iconPadding="@dimen/dimen_5"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -76,7 +80,9 @@
                 app:met_floatingLabel="highlight"
                 app:met_floatingLabelText="name"
                 android:inputType="textCapWords"
-                android:hint="Your name"/>
+                android:hint="Your name"
+                app:met_iconLeft="@drawable/ic_user"
+                app:met_iconPadding="@dimen/dimen_5"/>
 
             <com.rengwuxian.materialedittext.MaterialEditText
                 android:id="@+id/r_email_input"
@@ -85,7 +91,9 @@
                 app:met_floatingLabel="highlight"
                 app:met_floatingLabelText="Email"
                 android:inputType="textEmailAddress"
-                android:hint="Email"/>
+                android:hint="Email"
+                app:met_iconLeft="@drawable/ic_email"
+                app:met_iconPadding="@dimen/dimen_5"/>
 
             <com.rengwuxian.materialedittext.MaterialEditText
                 android:id="@+id/r_password_input"
@@ -94,7 +102,9 @@
                 app:met_floatingLabel="highlight"
                 app:met_floatingLabelText="password"
                 android:inputType="textPassword"
-                android:hint="Password"/>
+                android:hint="Password"
+                app:met_iconLeft="@drawable/ic_password"
+                app:met_iconPadding="@dimen/dimen_5"/>
 
             <com.rengwuxian.materialedittext.MaterialEditText
                 android:id="@+id/repeat_password_input"
@@ -103,7 +113,9 @@
                 app:met_floatingLabel="highlight"
                 app:met_floatingLabelText="Confirm password"
                 android:inputType="textPassword"
-                android:hint="Confirm password"/>
+                android:hint="Confirm password"
+                app:met_iconLeft="@drawable/ic_password"
+                app:met_iconPadding="@dimen/dimen_5"/>
 
 
             <LinearLayout
