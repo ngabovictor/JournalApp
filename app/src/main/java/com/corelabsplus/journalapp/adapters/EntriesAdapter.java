@@ -42,6 +42,26 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
+        Entry entry = entries.get(position);
+
+        String title, caption, created, modified;
+
+        title = entry.getTitle();
+        caption = entry.getTags();
+        created = "Created " + entry.getCreated();
+        modified = "Modified " + entry.getModified();
+
+        //Binding data to views
+
+        holder.entryTitleView.setText(title);
+        holder.entryCaption.setText(caption);
+        holder.entryCreated.setText(created);
+        holder.entryModified.setText(modified);
+
+        //Setting labelColor to random color
+
+        holder.labelColor.setBackgroundColor(getColor());
+
     }
 
     @Override
@@ -60,11 +80,11 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
         @BindView(R.id.entry_title) TextView entryTitleView;
         @BindView(R.id.entry_caption) TextView entryCaption;
         @BindView(R.id.created) TextView entryCreated;
-        @BindView(R.id.modified) TextView entryModied;
+        @BindView(R.id.modified) TextView entryModified;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(context, itemView);
+            ButterKnife.bind(this, itemView);
         }
     }
 
