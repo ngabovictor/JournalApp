@@ -77,7 +77,7 @@
                 android:layout_height="wrap_content"
                 app:met_floatingLabel="highlight"
                 app:met_floatingLabelText="name"
-                android:inputType="textEmailAddress"
+                android:inputType="textCapWords"
                 android:hint="Your name"/>
 
             <com.rengwuxian.materialedittext.MaterialEditText
@@ -150,5 +150,16 @@
             android:drawableStart="@mipmap/ic_google_logo"
             android:layout_below="@id/or"
             android:text="SIGN IN WITH GOOGLE"/>
+
+        <com.wang.avi.AVLoadingIndicatorView
+            android:id="@+id/avi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/google_login"
+            android:layout_centerHorizontal="true"
+            app:indicatorColor="@color/colorPrimary"
+            android:layout_marginTop="@dimen/dimen_10"
+            app:indicatorName="BallSpinFadeLoaderIndicator"
+            android:visibility="gone"/>
     </RelativeLayout>
 </ScrollView>

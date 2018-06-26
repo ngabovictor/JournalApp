@@ -26,7 +26,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.rengwuxian.materialedittext.MaterialEditText;
+import com.wang.avi.AVLoadingIndicatorView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,6 +52,7 @@ public class LoginActivity extends AppCompatActivity implements
     @BindView(R.id.go_login) Button goLogin;
     @BindView(R.id.go_register) Button goRegister;
     @BindView(R.id.google_login) Button googleLoginBtn;
+    @BindView(R.id.avi) AVLoadingIndicatorView avi;
 
     //GLOBAL VARIABLES AND CONSTANTS
 
@@ -58,6 +61,11 @@ public class LoginActivity extends AppCompatActivity implements
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
     private Context context;
+
+
+    //INPUTS
+
+    private String name, email, password, rePassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,6 +184,36 @@ public class LoginActivity extends AppCompatActivity implements
                 });
     }
 
+    //DISABLE VIEWS
+
+    public void disableViews(){
+        passwordView.setEnabled(false);
+        emailView.setEnabled(false);
+        nameView.setEnabled(false);
+        rePasswordView.setEnabled(false);
+        registerBtn.setEnabled(false);
+        loginBtn.setEnabled(false);
+        googleLoginBtn.setEnabled(false);
+        goLogin.setEnabled(false);
+        goRegister.setEnabled(false);
+        avi.setVisibility(View.VISIBLE);
+    }
+
+    //ENABLE VIEWS
+
+    public void enableViews(){
+        passwordView.setEnabled(true);
+        emailView.setEnabled(true);
+        nameView.setEnabled(true);
+        rePasswordView.setEnabled(true);
+        registerBtn.setEnabled(true);
+        loginBtn.setEnabled(true);
+        googleLoginBtn.setEnabled(true);
+        goLogin.setEnabled(true);
+        goRegister.setEnabled(true);
+        avi.setVisibility(View.GONE);
+    }
+
 
     //ONCLICK LISTENER
 
@@ -188,10 +226,100 @@ public class LoginActivity extends AppCompatActivity implements
         }
 
         else if (id == R.id.login_btn){
+            email = emailView.getText().toString().trim();
+            password = passwordView.getText().toString().trim();
 
+            if (email.length() == 0){
+                emailView.setError("Email is required");
+            }
+
+            else if (password.length() == 0){
+                passwordView.setError("Password is required");
+            }
+
+            else {
+                disableViews();
+
+                //Login with email and password
+
+                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()){
+
+                        }
+
+                        else {
+                            enableViews();
+                        }
+                    }
+                });
+            }
         }
 
         else if (id == R.id.register_btn){
+
+            email = emailView.getText().toString().trim();
+            password = passwordView.getText().toString().trim();
+            name = nameView.getText().toString().trim();
+            rePassword = rePasswordView.getText().toString().trim();
+
+            if (email.length() == 0){
+                emailView.setError("Email is required");
+            }
+
+            else if (password.length() == 0){
+                passwordView.setError("Password is required");
+            }
+
+            else if (name.length() == 0){
+                nameView.setError("Name is required");
+            }
+
+            else if (rePassword.length() == 0){
+                rePasswordView.setError("Confirm password");
+            }
+
+            else if (password.length() > 0 && rePassword.length() > 0 && !password.equals(rePassword)){
+                passwordView.setError("Passwords should match");
+                rePasswordView.setError("Passwords should match");
+            }
+
+            else {
+                disableViews();
+
+                //Creating user with email and password
+
+                mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()){
+
+                            //UPDATING USER PROFILE
+                            UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest
+                                                                                            .Builder()
+                                                                                            .setDisplayName(name)
+                                                                                            .build();
+                            task.getResult().getUser().updateProfile(userProfileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()){
+
+                                    }
+
+                                    else {
+                                        enableViews();
+                                    }
+                                }
+                            });
+                        }
+
+                        else {
+                            enableViews();
+                        }
+                    }
+                });
+            }
 
         }
 
