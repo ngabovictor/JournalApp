@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.corelabsplus.journalapp.R;
 import com.corelabsplus.journalapp.adapters.EntriesAdapter;
@@ -24,6 +26,7 @@ public class EntriesActivity extends AppCompatActivity {
     //Binding Views
 
     @BindView(R.id.entries_recycler_view) RecyclerView entriesRecyclerView;
+    @BindView(R.id.empty) ImageView empty;
 
     //Creating fields
 
@@ -37,6 +40,7 @@ public class EntriesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entries);
         ButterKnife.bind(this);
+
         context = this;
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_db));
@@ -48,7 +52,7 @@ public class EntriesActivity extends AppCompatActivity {
     }
 
     private void getEntries() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 0; i++) {
             Entry entry = new Entry();
 
             entry.setTitle("Title " + String.valueOf(i));
@@ -59,8 +63,16 @@ public class EntriesActivity extends AppCompatActivity {
 
             entries.add(entry);
 
-            EntriesAdapter adapter = new EntriesAdapter(entries, context);
-            entriesRecyclerView.setAdapter(adapter);
+            if (entries.size() < 1){
+                empty.setVisibility(View.VISIBLE);
+            }
+
+            else {
+                empty.setVisibility(View.GONE);
+
+                EntriesAdapter adapter = new EntriesAdapter(entries, context);
+                entriesRecyclerView.setAdapter(adapter);
+            }
         }
     }
 }
