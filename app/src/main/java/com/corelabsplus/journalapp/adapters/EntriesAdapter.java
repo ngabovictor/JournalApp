@@ -22,7 +22,7 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHolder> implements Filterable{
+public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHolder>{
 
     private List<Entry> entries = new ArrayList<>();
     private Context context;
@@ -67,11 +67,6 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
     @Override
     public int getItemCount() {
         return entries.size();
-    }
-
-    @Override
-    public Filter getFilter() {
-        return null;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{

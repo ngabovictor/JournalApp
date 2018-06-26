@@ -13,7 +13,9 @@ import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,14 +38,17 @@ public class EntryActivity extends AppCompatActivity {
 
     //BINDING VIEWS
 
+    @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.entry_title) MaterialEditText titleField;
     @BindView(R.id.entry_tags) MaterialEditText tagsField;
     @BindView(R.id.editor) Editor editor;
 
 
+
     //FIELDS
 
     private Context context;
+    private boolean isNewEntry;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +56,45 @@ public class EntryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_entry);
         ButterKnife.bind(this);
         context = this;
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        isNewEntry = getIntent().getBooleanExtra("newEntry", false);
+
+        if (isNewEntry){
+            toolbar.setTitle("Untitled Entry");
+        }
+
+        else{
+            toolbar.setTitle("Lorem ipsum");
+        }
+
+        titleField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String title = titleField.getText().toString().trim();
+
+                if (title.length() == 0){
+                    toolbar.setTitle("Untitled entry");
+                }
+
+                else {
+                    toolbar.setTitle(title);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         setUpEditor();
     }
@@ -140,12 +184,16 @@ public class EntryActivity extends AppCompatActivity {
             }
         });
 
+        /*
+
         findViewById(R.id.action_map).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 editor.insertMap();
             }
         });
+
+        */
 
         findViewById(R.id.action_erase).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -251,6 +299,12 @@ public class EntryActivity extends AppCompatActivity {
         } else if (requestCode == editor.MAP_MARKER_REQUEST) {
             editor.insertMap(data.getStringExtra("cords"));
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return super.onSupportNavigateUp();
     }
 
     @Override

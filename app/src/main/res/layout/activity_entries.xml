@@ -22,7 +22,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v4.widget.NestedScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
@@ -45,7 +45,7 @@
                 android:tint="@color/colorPrimary"
                 android:visibility="gone"/>
         </RelativeLayout>
-    </android.support.v4.widget.NestedScrollView>
+    </RelativeLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/new_entry_fab"
