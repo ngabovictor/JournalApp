@@ -1,6 +1,8 @@
 package com.corelabsplus.journalapp.activities;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,6 +29,7 @@ public class EntriesActivity extends AppCompatActivity {
 
     @BindView(R.id.entries_recycler_view) RecyclerView entriesRecyclerView;
     @BindView(R.id.empty) ImageView empty;
+    @BindView(R.id.new_entry_fab) FloatingActionButton newEntryFab;
 
     //Creating fields
 
@@ -49,6 +52,14 @@ public class EntriesActivity extends AppCompatActivity {
         entriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         getEntries();
+
+        newEntryFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, EntryActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void getEntries() {
