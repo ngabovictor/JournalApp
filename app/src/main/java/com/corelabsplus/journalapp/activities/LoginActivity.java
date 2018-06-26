@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.corelabsplus.journalapp.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -27,8 +28,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.wang.avi.AVLoadingIndicatorView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -61,6 +70,8 @@ public class LoginActivity extends AppCompatActivity implements
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
     private Context context;
+    private DatabaseReference databaseReference;
+    //private StorageReference storageReference;
 
 
     //INPUTS
@@ -76,6 +87,7 @@ public class LoginActivity extends AppCompatActivity implements
         context = this;
 
         mAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_db));
 
 
         // Configure Google Sign In
@@ -126,7 +138,7 @@ public class LoginActivity extends AppCompatActivity implements
 
     //AUTH WITH GOOGLE
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+    private void firebaseAuthWithGoogle(final GoogleSignInAccount acct) {
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
@@ -138,7 +150,15 @@ public class LoginActivity extends AppCompatActivity implements
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
+
+                            //Set Values to Google account values
+                            name = acct.getDisplayName();
+                            email = acct.getEmail();
+
+
+                            //Check if the user is already in db
+                            checkUser(user.getUid());
+
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -246,7 +266,7 @@ public class LoginActivity extends AppCompatActivity implements
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()){
-
+                            goToEntries();
                         }
 
                         else {
@@ -300,14 +320,18 @@ public class LoginActivity extends AppCompatActivity implements
                                                                                             .Builder()
                                                                                             .setDisplayName(name)
                                                                                             .build();
-                            task.getResult().getUser().updateProfile(userProfileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            final FirebaseUser user = task.getResult().getUser();
+
+                            user.updateProfile(userProfileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()){
-
+                                        //Got to save the user to db
+                                        saveUserToDb(user.getUid());
                                     }
 
                                     else {
+                                        Toast.makeText(LoginActivity.this, "Failed", Toast.LENGTH_SHORT).show();
                                         enableViews();
                                     }
                                 }
@@ -315,6 +339,7 @@ public class LoginActivity extends AppCompatActivity implements
                         }
 
                         else {
+                            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
                             enableViews();
                         }
                     }
@@ -340,5 +365,59 @@ public class LoginActivity extends AppCompatActivity implements
             layoutParams.removeRule(RelativeLayout.BELOW);
             layoutParams.addRule(RelativeLayout.BELOW, R.id.register_view);
         }
+    }
+
+
+    //SAVING NEW USER TO FIREBASE DATABSE
+
+    private void saveUserToDb(String userID){
+        Map<String, String> userData = new HashMap<>();
+            userData.put("name", name);
+            userData.put("email", email);
+
+        databaseReference.child("users").child(userID).setValue(userData).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    goToEntries();
+                }
+
+                else {
+                    Toast.makeText(context, "Unable to finish", Toast.LENGTH_SHORT).show();
+                    enableViews();
+                }
+            }
+        });
+    }
+
+    //GO TO USER ENTRIES ACTIVITY
+
+    private void goToEntries(){
+        Intent intent = new Intent(context, EntriesActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    //CHECK IF THE USER IS IN THE DB
+
+    private void checkUser(final String userKey){
+        databaseReference.child("users").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.hasChild(userKey)){
+                    goToEntries();
+                }
+
+                else {
+                    saveUserToDb(userKey);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(context, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                enableViews();
+            }
+        });
     }
 }
