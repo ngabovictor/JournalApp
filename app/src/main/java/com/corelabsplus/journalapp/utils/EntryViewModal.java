@@ -20,4 +20,21 @@ public class EntryViewModal extends AndroidViewModel {
         allEntries = entryRepository.getAllEntries();
 
     }
+
+    public LiveData<List<Entry>> getAllEntries(){
+        return allEntries;
+    }
+
+    public void addEntry(Entry entry){
+        entryRepository.addEntry(entry);
+    }
+
+    public void updateEntry(Entry entry){
+        entryRepository.updateEntry(entry);
+    }
+
+    public void deleteEntry(Entry entry){
+        entryRepository.deleteEntry(entry);
+    }
 }
+

@@ -1,9 +1,12 @@
 package com.corelabsplus.journalapp.activities;
 
 import android.app.SearchManager;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,6 +24,7 @@ import com.corelabsplus.journalapp.R;
 import com.corelabsplus.journalapp.adapters.EntriesAdapter;
 import com.corelabsplus.journalapp.utils.DbHandler;
 import com.corelabsplus.journalapp.utils.Entry;
+import com.corelabsplus.journalapp.utils.EntryViewModal;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -47,6 +51,9 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
 
+    private EntryViewModal entryViewModal;
+    EntriesAdapter adapter;
+
 
     //DATABASE FILES
 
@@ -68,14 +75,18 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
 
         context = this;
         dbHandler = new DbHandler(this);
+        entryViewModal = ViewModelProviders.of(this).get(EntryViewModal.class);
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_db));
 
         setSupportActionBar(toolbar);
 
+        adapter = new EntriesAdapter(entries, context);
+
         entriesRecyclerView.setHasFixedSize(true);
         entriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        entriesRecyclerView.setAdapter(adapter);
 
         getEntries();
 
@@ -90,6 +101,8 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     }
 
     private void getEntries() {
+
+        /*
         Cursor entriesCursor = dbHandler.getEntries();
 
         while (entriesCursor.moveToNext()){
@@ -117,16 +130,23 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
 
         }
 
-        if (entries.size() < 1){
-            empty.setVisibility(View.VISIBLE);
-        }
+        */
 
-        else {
-            empty.setVisibility(View.GONE);
+        entryViewModal.getAllEntries().observe(this, new Observer<List<Entry>>() {
+            @Override
+            public void onChanged(@Nullable List<Entry> entries) {
+                adapter.setEntries(entries);
 
-            EntriesAdapter adapter = new EntriesAdapter(entries, context);
-            entriesRecyclerView.setAdapter(adapter);
-        }
+                if (entries.size() < 1){
+                    empty.setVisibility(View.VISIBLE);
+                }
+
+                else {
+                    empty.setVisibility(View.GONE);
+                }
+            }
+        });
+
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
