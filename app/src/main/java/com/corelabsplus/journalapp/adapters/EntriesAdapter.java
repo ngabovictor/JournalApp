@@ -1,10 +1,12 @@
 package com.corelabsplus.journalapp.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
@@ -13,6 +15,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.corelabsplus.journalapp.R;
+import com.corelabsplus.journalapp.activities.EntryActivity;
+import com.corelabsplus.journalapp.utils.DbHandler;
 import com.corelabsplus.journalapp.utils.Entry;
 
 import java.util.ArrayList;
@@ -26,10 +30,12 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
 
     private List<Entry> entries = new ArrayList<>();
     private Context context;
+    private DbHandler dbHandler;
 
     public EntriesAdapter(List<Entry> entries, Context context) {
         this.entries = entries;
         this.context = context;
+        dbHandler = new DbHandler(context);
     }
 
     @NonNull
@@ -42,7 +48,7 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        Entry entry = entries.get(position);
+        final Entry entry = entries.get(position);
 
         String title, caption, created, modified;
 
@@ -61,6 +67,28 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
         //Setting labelColor to random color
 
         holder.labelColor.setBackgroundColor(getColor());
+
+        //On item click listener
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, EntryActivity.class);
+                intent.putExtra("entry", entry);
+                intent.putExtra("newEntry", false);
+                context.startActivity(intent);
+            }
+        });
+
+        //On item swipped right
+
+        holder.itemView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                return false;
+            }
+        });
 
     }
 

@@ -3,6 +3,7 @@ package com.corelabsplus.journalapp.activities;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.widget.ImageView;
 
 import com.corelabsplus.journalapp.R;
 import com.corelabsplus.journalapp.adapters.EntriesAdapter;
+import com.corelabsplus.journalapp.utils.DbHandler;
 import com.corelabsplus.journalapp.utils.Entry;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -45,6 +47,19 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
 
+
+    //DATABASE FILES
+
+    private static final String COLUMN_ID = "id";
+    private static final String COLUMN_TITLE = "title";
+    private static final String COLUMN_TIME_CREATED = "created";
+    private static final String COLUMN_TIME_MODIFIED = "modified";
+    private static final String COLUMN_CONTENT = "content";
+    private static final String COLUMN_CAPTION = "caption";
+    private static final String COLUMN_SYNCED = "synced";
+
+    private DbHandler dbHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +67,8 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
         ButterKnife.bind(this);
 
         context = this;
+        dbHandler = new DbHandler(this);
+
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_db));
 
@@ -66,33 +83,49 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, EntryActivity.class);
+                intent.putExtra("newEntry", true);
                 startActivity(intent);
             }
         });
     }
 
     private void getEntries() {
-        for (int i = 0; i < 100; i++) {
+        Cursor entriesCursor = dbHandler.getEntries();
+
+        while (entriesCursor.moveToNext()){
+            String title, caption, created, modified, content, synced, id;
+
+            id = String.valueOf(Integer.parseInt(entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_ID))));
+            title = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_TITLE));
+            caption = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_CAPTION));
+            created = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_TIME_CREATED));
+            modified = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_TIME_MODIFIED));
+            content = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_CONTENT));
+            synced = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_SYNCED));
+
             Entry entry = new Entry();
 
-            entry.setTitle("Title " + String.valueOf(i));
-            entry.setTags("Caption " + String.valueOf(i));
-            entry.setCreated("June 25, 2018 3:00PM");
-            entry.setModified("June 25, 2018 3:00PM");
-            entry.setContent(getString(R.string.lorem));
+            entry.setTitle(title);
+            entry.setTags(caption);
+            entry.setCreated(created);
+            entry.setModified(modified);
+            entry.setContent(content);
+            entry.setId(id);
+            entry.setSynced(synced);
 
             entries.add(entry);
 
-            if (entries.size() < 1){
-                empty.setVisibility(View.VISIBLE);
-            }
+        }
 
-            else {
-                empty.setVisibility(View.GONE);
+        if (entries.size() < 1){
+            empty.setVisibility(View.VISIBLE);
+        }
 
-                EntriesAdapter adapter = new EntriesAdapter(entries, context);
-                entriesRecyclerView.setAdapter(adapter);
-            }
+        else {
+            empty.setVisibility(View.GONE);
+
+            EntriesAdapter adapter = new EntriesAdapter(entries, context);
+            entriesRecyclerView.setAdapter(adapter);
         }
     }
 

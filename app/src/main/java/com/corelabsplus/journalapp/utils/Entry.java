@@ -1,9 +1,50 @@
 package com.corelabsplus.journalapp.utils;
 
-public class Entry {
-    private String title, tags, content, created, modified;
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
+
+import java.io.Serializable;
+
+@Entity(tableName = "entries")
+public class Entry implements Serializable{
+
+    @PrimaryKey
+    @NonNull
+    @ColumnInfo(name = "id")
+    private int id;
+
+    @ColumnInfo(name = "title")
+    private String title;
+
+    @ColumnInfo(name = "caption")
+    private String tags;
+
+    @ColumnInfo(name = "content")
+    private String content;
+
+    @ColumnInfo(name = "date_created")
+    private String created;
+
+    @ColumnInfo(name = "date_modified")
+    private String modified;
+
+    @ColumnInfo(name = "synced")
+    private String synced;
+
 
     public Entry() {
+    }
+
+    public Entry(@NonNull int id, String title, String tags, String content, String created, String modified, String synced) {
+        this.id = id;
+        this.title = title;
+        this.tags = tags;
+        this.content = content;
+        this.created = created;
+        this.modified = modified;
+        this.synced = synced;
     }
 
     public String getTitle() {
@@ -44,5 +85,21 @@ public class Entry {
 
     public void setModified(String modified) {
         this.modified = modified;
+    }
+
+    public String getSynced() {
+        return synced;
+    }
+
+    public void setSynced(String synced) {
+        this.synced = synced;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
