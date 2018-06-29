@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.corelabsplus.journalapp.R;
+import com.corelabsplus.journalapp.utils.Entry;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -36,7 +37,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.wang.avi.AVLoadingIndicatorView;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -71,6 +75,8 @@ public class LoginActivity extends AppCompatActivity implements
     private FirebaseAuth mAuth;
     private Context context;
     private DatabaseReference databaseReference;
+    private List<Entry> entries = new ArrayList<Entry>();
+    private String ENTRIES_DIR;
     //private StorageReference storageReference;
 
 
@@ -88,6 +94,7 @@ public class LoginActivity extends AppCompatActivity implements
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_db));
+        ENTRIES_DIR = getString(R.string.entries_dir);
 
 
         // Configure Google Sign In
@@ -111,6 +118,7 @@ public class LoginActivity extends AppCompatActivity implements
     //SIGNIN INTENT
 
     private void googleSignIn() {
+        disableViews();
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -132,6 +140,7 @@ public class LoginActivity extends AppCompatActivity implements
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e);
                 // ...
+                enableViews();
             }
         }
     }
@@ -155,11 +164,14 @@ public class LoginActivity extends AppCompatActivity implements
                             name = acct.getDisplayName();
                             email = acct.getEmail();
 
+                            //Toast.makeText(context, name, Toast.LENGTH_SHORT).show();
+
 
                             //Check if the user is already in db
                             checkUser(user.getUid());
 
                         } else {
+                            enableViews();
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Snackbar.make(findViewById(R.id.main_layout), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
@@ -394,6 +406,8 @@ public class LoginActivity extends AppCompatActivity implements
 
     private void goToEntries(){
         Intent intent = new Intent(context, EntriesActivity.class);
+        intent.putExtra("isFromLogin", true);
+        intent.putExtra("entries", (Serializable) entries);
         startActivity(intent);
         finish();
     }
@@ -405,6 +419,12 @@ public class LoginActivity extends AppCompatActivity implements
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChild(userKey)){
+                    if (dataSnapshot.child(userKey).hasChild(ENTRIES_DIR)){
+                        for (DataSnapshot entrySnapshot : dataSnapshot.child(userKey).child(ENTRIES_DIR).getChildren()){
+                            Entry entry = entrySnapshot.getValue(Entry.class);
+                            entries.add(entry);
+                        }
+                    }
                     goToEntries();
                 }
 

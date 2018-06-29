@@ -1,6 +1,8 @@
 package com.corelabsplus.journalapp.activities;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -9,8 +11,8 @@ import android.text.TextWatcher;
 import android.widget.Toast;
 
 import com.corelabsplus.journalapp.R;
-import com.corelabsplus.journalapp.utils.DbHandler;
 import com.corelabsplus.journalapp.utils.Entry;
+import com.corelabsplus.journalapp.utils.EntryViewModal;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import java.text.DateFormat;
@@ -35,10 +37,13 @@ public class EntryActivity extends AppCompatActivity implements TextWatcher {
 
     private Context context;
     private boolean isNewEntry;
-    private DbHandler dbHandler;
 
-    private String title, caption, content, created, modified, synced, id;
+    private String title, caption, content, created, modified, synced;
+    int id;
     private Entry entry = new Entry();
+
+    private static final int NEW_ENTRY_ADD_REQUEST_CODE = 1;
+    private static final int UPDATE_ENTRY_REQUEST_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +51,6 @@ public class EntryActivity extends AppCompatActivity implements TextWatcher {
         setContentView(R.layout.activity_entry);
         ButterKnife.bind(this);
         context = this;
-        dbHandler = new DbHandler(this);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -62,32 +66,7 @@ public class EntryActivity extends AppCompatActivity implements TextWatcher {
             getEntry();
         }
 
-        titleField.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String title = titleField.getText().toString().trim();
-
-                if (title.length() == 0){
-                    toolbar.setTitle("Untitled entry");
-                }
-
-                else {
-                    toolbar.setTitle(title);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-
+        titleField.addTextChangedListener(this);
         tagsField.addTextChangedListener(this);
         contentField.addTextChangedListener(this);
 
@@ -126,62 +105,20 @@ public class EntryActivity extends AppCompatActivity implements TextWatcher {
     @Override
     public void onBackPressed() {
 
+        Intent intent = new Intent();
+        intent.putExtra("entry", entry);
 
         if (isNewEntry){
-
-            title = titleField.getText().toString().trim();
-            caption = tagsField.getText().toString().trim();
-            content = contentField.getText().toString().trim();
-
-            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm");
-            Date date = new Date();
-            modified = dateFormat.format(date);
-            created = dateFormat.format(date);
-
-            synced = "false";
-
-            if (title.length() == 0){
-                title = "Untitled";
-            }
-
-            else if (caption.length() == 0){
-                caption = "No tags";
-            }
-
-            else if (content.length() == 0){
-                content = "No content";
-            }
-
-            entry.setTitle(title);
-            entry.setSynced(synced);
-            entry.setModified(modified);
-            entry.setContent(content);
-            entry.setCreated(created);
-            entry.setTags(caption);
-
-            boolean status = dbHandler.addEntry(entry);
-
-            if (status){
-                Toast.makeText(context, title + " saved", Toast.LENGTH_SHORT).show();
-                super.onBackPressed();
-            }
-
-            else {
-                Toast.makeText(context, "Unable to finish the operation", Toast.LENGTH_SHORT).show();
-                super.onBackPressed();
-            }
+            setResult(NEW_ENTRY_ADD_REQUEST_CODE, intent);
         }
 
         else {
-            super.onBackPressed();
+            setResult(UPDATE_ENTRY_REQUEST_CODE, intent);
         }
+
+        finish();
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        //setGhost((Button) findViewById(R.id.btnRender));
-    }
 
 
 
@@ -206,6 +143,7 @@ public class EntryActivity extends AppCompatActivity implements TextWatcher {
 
         synced = "false";
 
+
         if (title.length() == 0){
             title = "Untitled";
         }
@@ -218,9 +156,27 @@ public class EntryActivity extends AppCompatActivity implements TextWatcher {
             content = "No content";
         }
 
+        getSupportActionBar().setTitle(title);
+
         if (!isNewEntry){
+
+            entry.setTitle(title);
+            entry.setContent(content);
+            entry.setSynced(synced);
+            entry.setTags(caption);
             entry.setModified(modified);
-            dbHandler.updateEntry(entry, Integer.parseInt(entry.getId()));
+
+//            entryViewModal.updateEntry(entry);
+//            Toast.makeText(context, "saved", Toast.LENGTH_SHORT).show();
+        }
+
+        else if (isNewEntry){
+            entry.setTitle(title);
+            entry.setSynced(synced);
+            entry.setModified(modified);
+            entry.setContent(content);
+            entry.setCreated(created);
+            entry.setTags(caption);
         }
 
     }

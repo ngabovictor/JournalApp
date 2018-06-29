@@ -1,5 +1,6 @@
 package com.corelabsplus.journalapp.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,14 +10,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.corelabsplus.journalapp.R;
 import com.corelabsplus.journalapp.activities.EntryActivity;
-import com.corelabsplus.journalapp.utils.DbHandler;
 import com.corelabsplus.journalapp.utils.Entry;
 
 import java.util.ArrayList;
@@ -30,12 +28,12 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
 
     private List<Entry> entries = new ArrayList<>();
     private Context context;
-    private DbHandler dbHandler;
+
+    private static final int UPDATE_ENTRY_REQUEST_CODE = 2;
 
     public EntriesAdapter(List<Entry> entries, Context context) {
         this.entries = entries;
         this.context = context;
-        dbHandler = new DbHandler(context);
     }
 
     @NonNull
@@ -76,7 +74,7 @@ public class EntriesAdapter extends RecyclerView.Adapter<EntriesAdapter.ViewHold
                 Intent intent = new Intent(context, EntryActivity.class);
                 intent.putExtra("entry", entry);
                 intent.putExtra("newEntry", false);
-                context.startActivity(intent);
+                ((Activity) context).startActivityForResult(intent, UPDATE_ENTRY_REQUEST_CODE);
             }
         });
 

@@ -4,4 +4,8 @@
     <string name="firebase_db">development</string>
     <string name="firebase_storage">development</string>
     <string name="my_entries_title">My Entries</string>
+    <string name="entries_dir">entries</string>
+    <string name="slogan">All your thoughts and feelings in one place</string>
+    <string name="synced_true">true</string>
+    <string name="synced_false">false</string>
 </resources>

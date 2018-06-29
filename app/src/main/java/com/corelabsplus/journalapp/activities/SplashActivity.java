@@ -24,6 +24,7 @@ public class SplashActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
 
+
     }
 
     @Override

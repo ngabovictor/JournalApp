@@ -5,7 +5,8 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -19,12 +20,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.corelabsplus.journalapp.R;
 import com.corelabsplus.journalapp.adapters.EntriesAdapter;
-import com.corelabsplus.journalapp.utils.DbHandler;
 import com.corelabsplus.journalapp.utils.Entry;
 import com.corelabsplus.journalapp.utils.EntryViewModal;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -52,20 +55,12 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     private DatabaseReference databaseReference;
 
     private EntryViewModal entryViewModal;
-    EntriesAdapter adapter;
+    private EntriesAdapter adapter;
 
+    private static final int NEW_ENTRY_ADD_REQUEST_CODE = 1;
+    private static final int UPDATE_ENTRY_REQUEST_CODE = 2;
+    private boolean isFromLogin;
 
-    //DATABASE FILES
-
-    private static final String COLUMN_ID = "id";
-    private static final String COLUMN_TITLE = "title";
-    private static final String COLUMN_TIME_CREATED = "created";
-    private static final String COLUMN_TIME_MODIFIED = "modified";
-    private static final String COLUMN_CONTENT = "content";
-    private static final String COLUMN_CAPTION = "caption";
-    private static final String COLUMN_SYNCED = "synced";
-
-    private DbHandler dbHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +69,8 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
         ButterKnife.bind(this);
 
         context = this;
-        dbHandler = new DbHandler(this);
         entryViewModal = ViewModelProviders.of(this).get(EntryViewModal.class);
+        isFromLogin = getIntent().getBooleanExtra("isFromLogin", false);
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_db));
@@ -95,42 +90,20 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
             public void onClick(View v) {
                 Intent intent = new Intent(context, EntryActivity.class);
                 intent.putExtra("newEntry", true);
-                startActivity(intent);
+                startActivityForResult(intent, NEW_ENTRY_ADD_REQUEST_CODE);
             }
         });
     }
 
     private void getEntries() {
 
-        /*
-        Cursor entriesCursor = dbHandler.getEntries();
+        if (isFromLogin){
+            entries = (List<Entry>) getIntent().getSerializableExtra("entries");
 
-        while (entriesCursor.moveToNext()){
-            String title, caption, created, modified, content, synced, id;
-
-            id = String.valueOf(Integer.parseInt(entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_ID))));
-            title = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_TITLE));
-            caption = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_CAPTION));
-            created = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_TIME_CREATED));
-            modified = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_TIME_MODIFIED));
-            content = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_CONTENT));
-            synced = entriesCursor.getString(entriesCursor.getColumnIndex(COLUMN_SYNCED));
-
-            Entry entry = new Entry();
-
-            entry.setTitle(title);
-            entry.setTags(caption);
-            entry.setCreated(created);
-            entry.setModified(modified);
-            entry.setContent(content);
-            entry.setId(id);
-            entry.setSynced(synced);
-
-            entries.add(entry);
-
+            if (entries.size() > 0){
+                saveToLocal(entries);
+            }
         }
-
-        */
 
         entryViewModal.getAllEntries().observe(this, new Observer<List<Entry>>() {
             @Override
@@ -144,9 +117,43 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
                 else {
                     empty.setVisibility(View.GONE);
                 }
+
+                syncEntries(entries);
             }
         });
 
+    }
+
+    private void syncEntries(List<Entry> entries) {
+        for (final Entry entry : entries){
+
+            if (entry.getSynced().equals(getString(R.string.synced_false))) {
+
+                entry.setSynced(getString(R.string.synced_true));
+
+                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).push().setValue(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            entryViewModal.updateEntry(entry);
+                        } else {
+                            entry.setSynced(getString(R.string.synced_false));
+                        }
+                    }
+                });
+            }
+        }
+
+        Toast.makeText(this, "All entries have been synced successfully", Toast.LENGTH_SHORT).show();
+    }
+
+
+    public void saveToLocal(List<Entry> entriesTolocal){
+        for (Entry entry : entriesTolocal){
+            entryViewModal.addEntry(entry);
+        }
+
+        Toast.makeText(context, "Successfully saved to local", Toast.LENGTH_SHORT).show();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -186,14 +193,12 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
                 }
             }
 
-            EntriesAdapter adapter = new EntriesAdapter(filteredEntries, context);
-            entriesRecyclerView.setAdapter(adapter);
+            adapter.setEntries(filteredEntries);
 
         }
 
         else {
-            EntriesAdapter adapter = new EntriesAdapter(entries, context);
-            entriesRecyclerView.setAdapter(adapter);
+            adapter.setEntries(entries);
         }
         return true;
     }
@@ -201,5 +206,23 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     @Override
     public boolean onQueryTextSubmit(String query) {
         return false;
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Entry entry = (Entry) data.getSerializableExtra("entry");
+
+        if (resultCode == NEW_ENTRY_ADD_REQUEST_CODE){
+
+            entryViewModal.addEntry(entry);
+        }
+
+        else if (resultCode == UPDATE_ENTRY_REQUEST_CODE){
+
+            entryViewModal.updateEntry(entry);
+        }
     }
 }

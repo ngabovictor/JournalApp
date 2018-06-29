@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Entity(tableName = "entries")
 public class Entry implements Serializable{
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @NonNull
     @ColumnInfo(name = "id")
     private int id;
@@ -31,7 +31,7 @@ public class Entry implements Serializable{
     private String modified;
 
     @ColumnInfo(name = "synced")
-    private String synced;
+    private String synced = "false";
 
 
     public Entry() {
