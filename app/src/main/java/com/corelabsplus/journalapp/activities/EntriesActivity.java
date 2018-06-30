@@ -125,17 +125,18 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
 
     }
 
-    private void syncEntries(List<Entry> entries) {
-        for (final Entry entry : entries){
+    private void syncEntries(final List<Entry> entries) {
 
-            if (entry.getSynced().equals(getString(R.string.synced_false))) {
 
-                entry.setSynced(getString(R.string.synced_true));
+        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    for (final Entry entry : entries) {
 
-                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()){
+                        if (entry.getSynced().equals(getString(R.string.synced_false))) {
+
+                            entry.setSynced(getString(R.string.synced_true));
                             databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).push().setValue(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -148,9 +149,9 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
                             });
                         }
                     }
-                });
+                }
             }
-        }
+        });
 
         Toast.makeText(this, "All entries have been synced successfully", Toast.LENGTH_SHORT).show();
     }
