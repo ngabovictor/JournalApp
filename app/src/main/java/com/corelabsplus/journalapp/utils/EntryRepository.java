@@ -78,7 +78,7 @@ public class EntryRepository {
 
         @Override
         protected Void doInBackground(Entry... entries) {
-            entryDao.addEntry(entries[0]);
+            entryDao.deleteEntry(entries[0]);
             return null;
         }
     }

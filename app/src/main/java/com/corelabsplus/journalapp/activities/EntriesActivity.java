@@ -15,6 +15,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -34,6 +35,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,6 +73,10 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
         setContentView(R.layout.activity_entries);
         ButterKnife.bind(this);
 
+        if (savedInstanceState != null){
+            entries = (List<Entry>) savedInstanceState.getSerializable("entries");
+        }
+
         context = this;
         entryViewModal = ViewModelProviders.of(this).get(EntryViewModal.class);
         isFromLogin = getIntent().getBooleanExtra("isFromLogin", false);
@@ -85,6 +91,29 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
         entriesRecyclerView.setHasFixedSize(true);
         entriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        //Swipe to delete
+
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                final int position = viewHolder.getAdapterPosition();
+                adapter.notifyItemRemoved(position);
+                Entry entryToRemove = entries.get(position);
+
+                entryViewModal.deleteEntry(entryToRemove);
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(entriesRecyclerView);
+
+        // Check if the previous activity is LoginActivity
+
         if (isFromLogin){
             entries = (List<Entry>) getIntent().getSerializableExtra("entries");
 
@@ -93,6 +122,22 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
             }
         }
 
+
+        //Get all entries from local
+        getEntries();
+
+        newEntryFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, EntryActivity.class);
+                intent.putExtra("newEntry", true);
+                startActivityForResult(intent, NEW_ENTRY_ADD_REQUEST_CODE);
+            }
+        });
+    }
+
+    //Get Entries from Local DB
+    public void getEntries(){
         entryViewModal.getAllEntries().observe(this, new Observer<List<Entry>>() {
             @Override
             public void onChanged(@Nullable List<Entry> lEntries) {
@@ -110,17 +155,6 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
                 }
 
                 syncEntries(entries);
-            }
-        });
-
-        //getEntries();
-
-        newEntryFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, EntryActivity.class);
-                intent.putExtra("newEntry", true);
-                startActivityForResult(intent, NEW_ENTRY_ADD_REQUEST_CODE);
             }
         });
     }
@@ -159,6 +193,25 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
         syncToLocal(syncedEntries);
         syncedEntries.clear();
     }
+
+
+
+    //Save instances
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("entries", (Serializable) entries);
+    }
+
+    //On Restore intances
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        entries = (List<Entry>) savedInstanceState.getSerializable("entries");
+    }
+
 
     //Sync to local
 
