@@ -36,5 +36,7 @@ public class EntryViewModal extends AndroidViewModel {
     public void deleteEntry(Entry entry){
         entryRepository.deleteEntry(entry);
     }
+
+    public void deleteAllEntries() { entryRepository.deleteAll();}
 }
 

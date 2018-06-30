@@ -9,4 +9,5 @@
     <string name="synced_true">true</string>
     <string name="synced_false">false</string>
     <string name="no_entries_yet">No entries yet!</string>
+    <string name="sync_success">All entries have been synced successfully</string>
 </resources>

@@ -23,6 +23,10 @@ public class EntryRepository {
         return allEntries;
     }
 
+    public void deleteAll(){
+        new deleteAllAsyncTask(entryDao);
+    }
+
     public void addEntry(Entry entry){
         new insertAsyncTask(entryDao).execute(entry);
     }
@@ -75,6 +79,21 @@ public class EntryRepository {
         @Override
         protected Void doInBackground(Entry... entries) {
             entryDao.addEntry(entries[0]);
+            return null;
+        }
+    }
+
+    private static class deleteAllAsyncTask extends AsyncTask<Void, Void, Void>{
+        private EntryDao entryDao;
+
+        public deleteAllAsyncTask(EntryDao entryDao){
+            this.entryDao = entryDao;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            entryDao.deleteAllEntries();
             return null;
         }
     }

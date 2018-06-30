@@ -14,7 +14,7 @@ import java.util.List;
 @Dao
 public interface EntryDao {
 
-    @Query("SELECT * FROM entries ORDER BY date_modified DESC")
+    @Query("SELECT * FROM entries ORDER BY id DESC")
     LiveData<List<Entry>> getEntries();
 
 

@@ -28,6 +28,7 @@ import com.corelabsplus.journalapp.adapters.EntriesAdapter;
 import com.corelabsplus.journalapp.utils.Entry;
 import com.corelabsplus.journalapp.utils.EntryViewModal;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -51,6 +52,7 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     //Creating fields
 
     private List<Entry> entries = new ArrayList<>();
+    private List<Entry> syncedEntries = new ArrayList<>();
     private Context context;
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
@@ -82,21 +84,6 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
 
         entriesRecyclerView.setHasFixedSize(true);
         entriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        entriesRecyclerView.setAdapter(adapter);
-
-        getEntries();
-
-        newEntryFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, EntryActivity.class);
-                intent.putExtra("newEntry", true);
-                startActivityForResult(intent, NEW_ENTRY_ADD_REQUEST_CODE);
-            }
-        });
-    }
-
-    private void getEntries() {
 
         if (isFromLogin){
             entries = (List<Entry>) getIntent().getSerializableExtra("entries");
@@ -108,8 +95,11 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
 
         entryViewModal.getAllEntries().observe(this, new Observer<List<Entry>>() {
             @Override
-            public void onChanged(@Nullable List<Entry> entries) {
+            public void onChanged(@Nullable List<Entry> lEntries) {
+                entries = lEntries;
+
                 adapter.setEntries(entries);
+                entriesRecyclerView.setAdapter(adapter);
 
                 if (entries.size() < 1){
                     empty.setVisibility(View.VISIBLE);
@@ -123,46 +113,70 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
             }
         });
 
+        //getEntries();
+
+        newEntryFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, EntryActivity.class);
+                intent.putExtra("newEntry", true);
+                startActivityForResult(intent, NEW_ENTRY_ADD_REQUEST_CODE);
+            }
+        });
     }
+
+    //Sync Entries to Firebase
 
     private void syncEntries(final List<Entry> entries) {
 
+        for (final Entry entry : entries) {
+            if (entry.getSynced().equals(R.string.synced_false)){
 
-        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    for (final Entry entry : entries) {
+                entry.setSynced(getString(R.string.synced_true));
 
-                        if (entry.getSynced().equals(getString(R.string.synced_false))) {
-
-                            entry.setSynced(getString(R.string.synced_true));
-                            databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).push().setValue(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        entryViewModal.updateEntry(entry);
-                                    } else {
-                                        entry.setSynced(getString(R.string.synced_false));
-                                    }
-                                }
-                            });
+                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).child(String.valueOf(entry.getId())).setValue(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            syncedEntries.add(entry);
+                            Toast.makeText(EntriesActivity.this, "saved", Toast.LENGTH_SHORT).show();
+                        } else {
+                            entry.setSynced(getString(R.string.synced_false));
+                            Toast.makeText(EntriesActivity.this, "failed", Toast.LENGTH_SHORT).show();
                         }
                     }
-                }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(EntriesActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
-        });
+        }
 
-        Toast.makeText(this, "All entries have been synced successfully", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, getString(R.string.sync_success), Toast.LENGTH_SHORT).show();
+
+        syncToLocal(syncedEntries);
+        syncedEntries.clear();
     }
 
+    //Sync to local
 
+    public void syncToLocal(List<Entry> entries){
+        for (Entry entry : entries){
+            entryViewModal.updateEntry(entry);
+        }
+
+        Toast.makeText(context, getString(R.string.sync_success), Toast.LENGTH_SHORT).show();
+    }
+
+    //Save to local
     public void saveToLocal(List<Entry> entriesTolocal){
         for (Entry entry : entriesTolocal){
             entryViewModal.addEntry(entry);
         }
 
-        Toast.makeText(context, "Successfully saved to local", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, getString(R.string.sync_success), Toast.LENGTH_SHORT).show();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -186,6 +200,22 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        if (id == R.id.action_logout){
+            entryViewModal.deleteAllEntries();
+
+            mAuth.signOut();
+
+            Intent intent = new Intent(context, SplashActivity.class);
+            startActivity(intent);
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public boolean onQueryTextChange(String query) {
 
         if (query.length() > 0){
@@ -203,11 +233,13 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
             }
 
             adapter.setEntries(filteredEntries);
+            entriesRecyclerView.setAdapter(adapter);
 
         }
 
         else {
             adapter.setEntries(entries);
+            entriesRecyclerView.setAdapter(adapter);
         }
         return true;
     }
