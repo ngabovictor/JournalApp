@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.corelabsplus.journalapp.R;
@@ -43,7 +44,7 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
     //Binding Views
 
     @BindView(R.id.entries_recycler_view) RecyclerView entriesRecyclerView;
-    @BindView(R.id.empty) ImageView empty;
+    @BindView(R.id.empty) RelativeLayout empty;
     @BindView(R.id.new_entry_fab) FloatingActionButton newEntryFab;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
@@ -131,13 +132,20 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
 
                 entry.setSynced(getString(R.string.synced_true));
 
-                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).push().setValue(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            entryViewModal.updateEntry(entry);
-                        } else {
-                            entry.setSynced(getString(R.string.synced_false));
+                        if (task.isSuccessful()){
+                            databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).push().setValue(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        entryViewModal.updateEntry(entry);
+                                    } else {
+                                        entry.setSynced(getString(R.string.synced_false));
+                                    }
+                                }
+                            });
                         }
                     }
                 });

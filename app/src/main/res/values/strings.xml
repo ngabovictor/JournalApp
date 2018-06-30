@@ -8,4 +8,5 @@
     <string name="slogan">All your thoughts and feelings in one place</string>
     <string name="synced_true">true</string>
     <string name="synced_false">false</string>
+    <string name="no_entries_yet">No entries yet!</string>
 </resources>

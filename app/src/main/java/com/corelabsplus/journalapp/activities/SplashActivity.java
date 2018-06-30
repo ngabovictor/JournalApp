@@ -34,7 +34,7 @@ public class SplashActivity extends AppCompatActivity {
         //Check for current user
 
         if (mAuth.getCurrentUser() == null){
-            Intent intent = new Intent(context, LoginActivity.class);
+            Intent intent = new Intent(context, WelcomeActivity.class);
             startActivity(intent);
             finish();
         }

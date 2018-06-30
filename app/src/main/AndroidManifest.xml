@@ -25,7 +25,8 @@
         <activity
             android:name=".activities.LoginActivity"
             android:theme="@style/TranslucentTheme" />
-        <activity android:name=".activities.EntryActivity"></activity>
+        <activity android:name=".activities.EntryActivity" />
+        <activity android:name=".activities.WelcomeActivity"></activity>
     </application>
 
 </manifest>

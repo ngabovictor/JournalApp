@@ -37,14 +37,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
-            <ImageView
+            <RelativeLayout
                 android:id="@+id/empty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_cloud_off"
-                android:tint="@color/colorPrimary"
                 android:layout_centerInParent="true"
-                android:visibility="gone"/>
+                android:visibility="gone">
+                <ImageView
+                    android:id="@+id/cloud_off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_cloud_off"
+                    android:tint="@color/colorPrimary"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/cloud_off"
+                    android:text="@string/no_entries_yet"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="18sp"
+                    android:layout_centerHorizontal="true"/>
+            </RelativeLayout>
         </RelativeLayout>
     </RelativeLayout>
 
