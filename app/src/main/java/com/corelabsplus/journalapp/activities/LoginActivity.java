@@ -184,43 +184,13 @@ public class LoginActivity extends AppCompatActivity implements
     }
 
 
-    //LOGOUT
-
-    private void signOut() {
-        // Firebase sign out
-        mAuth.signOut();
-
-        // Google sign out
-        mGoogleSignInClient.signOut().addOnCompleteListener(this,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        //updateUI(null);
-                    }
-                });
-    }
-
-    //REVOKE USER ACCESS
-
-    private void revokeAccess() {
-        // Firebase sign out
-        mAuth.signOut();
-
-        // Google revoke access
-        mGoogleSignInClient.revokeAccess().addOnCompleteListener(this,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        //updateUI(null);
-                    }
-                });
-    }
 
     //DISABLE VIEWS
 
     public void disableViews(){
         passwordView.setEnabled(false);
         emailView.setEnabled(false);
+        registerEmailView.setEnabled(false);
         nameView.setEnabled(false);
         rePasswordView.setEnabled(false);
         registerBtn.setEnabled(false);
@@ -236,6 +206,7 @@ public class LoginActivity extends AppCompatActivity implements
     public void enableViews(){
         passwordView.setEnabled(true);
         emailView.setEnabled(true);
+        registerEmailView.setEnabled(true);
         nameView.setEnabled(true);
         rePasswordView.setEnabled(true);
         registerBtn.setEnabled(true);
@@ -291,17 +262,17 @@ public class LoginActivity extends AppCompatActivity implements
 
         else if (id == R.id.register_btn){
 
-            email = emailView.getText().toString().trim();
-            password = passwordView.getText().toString().trim();
+            email = registerEmailView.getText().toString().trim();
+            password = registerPasswordView.getText().toString().trim();
             name = nameView.getText().toString().trim();
             rePassword = rePasswordView.getText().toString().trim();
 
             if (email.length() == 0){
-                emailView.setError("Email is required");
+                registerEmailView.setError("Email is required");
             }
 
             else if (password.length() == 0){
-                passwordView.setError("Password is required");
+                registerPasswordView.setError("Password is required");
             }
 
             else if (name.length() == 0){

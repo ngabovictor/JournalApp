@@ -10,4 +10,5 @@
     <string name="synced_false">false</string>
     <string name="no_entries_yet">No entries yet!</string>
     <string name="sync_success">All entries have been synced successfully</string>
+    <string name="sync_error">Unable to sync to cloud now</string>
 </resources>

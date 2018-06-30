@@ -105,7 +105,15 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
                 adapter.notifyItemRemoved(position);
                 Entry entryToRemove = entries.get(position);
 
+                //delete the swipped entry
                 entryViewModal.deleteEntry(entryToRemove);
+
+                //remove the selected entry from the entries list
+                entries.remove(position);
+
+                if (entryToRemove.getSynced().equals(getString(R.string.synced_true))){
+                    deleteFromCloud(entryToRemove.getId());
+                }
             }
         };
 
@@ -154,17 +162,33 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
                     empty.setVisibility(View.GONE);
                 }
 
-                syncEntries(entries);
+                syncEntries(lEntries);
+            }
+        });
+    }
+
+    //Delete from cloud
+    public void deleteFromCloud(int id){
+        databaseReference.child("users").child(mAuth.getCurrentUser().getUid()).child(getString(R.string.entries_dir)).child(String.valueOf(id)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(context, getString(R.string.sync_success), Toast.LENGTH_SHORT).show();
+                }
+
+                else {
+                    Toast.makeText(context, getString(R.string.sync_error), Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
     //Sync Entries to Firebase
 
-    private void syncEntries(final List<Entry> entries) {
+    private void syncEntries(final List<Entry> sEntries) {
 
-        for (final Entry entry : entries) {
-            if (entry.getSynced().equals(R.string.synced_false)){
+        for (final Entry entry : sEntries) {
+            if (entry.getSynced().equals(getString(R.string.synced_false))){
 
                 entry.setSynced(getString(R.string.synced_true));
 
@@ -173,10 +197,10 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             syncedEntries.add(entry);
-                            Toast.makeText(EntriesActivity.this, "saved", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(EntriesActivity.this, getString(R.string.sync_success), Toast.LENGTH_SHORT).show();
                         } else {
                             entry.setSynced(getString(R.string.synced_false));
-                            Toast.makeText(EntriesActivity.this, "failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(EntriesActivity.this, getString(R.string.sync_error), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -188,11 +212,10 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
             }
         }
 
-        //Toast.makeText(this, getString(R.string.sync_success), Toast.LENGTH_SHORT).show();
-
         syncToLocal(syncedEntries);
         syncedEntries.clear();
     }
+
 
 
 
@@ -257,6 +280,7 @@ public class EntriesActivity extends AppCompatActivity implements SearchView.OnQ
 
         int id = item.getItemId();
         if (id == R.id.action_logout){
+            
             entryViewModal.deleteAllEntries();
 
             mAuth.signOut();

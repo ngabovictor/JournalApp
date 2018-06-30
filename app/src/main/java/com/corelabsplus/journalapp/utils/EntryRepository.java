@@ -24,7 +24,7 @@ public class EntryRepository {
     }
 
     public void deleteAll(){
-        new deleteAllAsyncTask(entryDao);
+        new deleteAllAsyncTask(entryDao).execute();
     }
 
     public void addEntry(Entry entry){
@@ -50,7 +50,11 @@ public class EntryRepository {
 
         @Override
         protected Void doInBackground(final Entry... entries) {
-            asyncTaskDao.addEntry(entries[0]);
+            try {
+                asyncTaskDao.addEntry(entries[0]);
+            } catch (Exception e){
+
+            }
             return null;
         }
     }
@@ -64,7 +68,11 @@ public class EntryRepository {
 
         @Override
         protected Void doInBackground(Entry... entries) {
-            asyncTaskDao.updateEntry(entries[0]);
+            try {
+                asyncTaskDao.updateEntry(entries[0]);
+            } catch (Exception e){
+
+            }
             return null;
         }
     }
